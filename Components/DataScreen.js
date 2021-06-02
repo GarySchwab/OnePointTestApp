@@ -9,11 +9,6 @@ class DataScreen extends React.Component {
     this.elementToAdd = "";
     this.textInputRef = React.createRef();
   }
-
-  componentDidMount() {
-    const action = { type: "getElementsFromStorage" };
-    this.props.dispatch(action);
-  }
   
   _displayListEmptyComponent() {
     return (

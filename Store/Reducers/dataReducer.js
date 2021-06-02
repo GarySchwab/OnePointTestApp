@@ -1,6 +1,6 @@
 const initialState = { stringsArray: [] };
 
-async function dataReducer(state = initialState, action) {
+function dataReducer(state = initialState, action) {
   let nextState;
   switch (action.type) {
     case "addElement":
