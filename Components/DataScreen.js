@@ -1,7 +1,14 @@
 import React from "react";
-import { StyleSheet, View, Text, FlatList, TextInput, TouchableOpacity, Image } from "react-native";
+import { View, Text, FlatList, TextInput, TouchableOpacity, Image } from "react-native";
+import styles from "./Styles/DataScreenStyles";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { connect } from "react-redux";
+
+/**
+ * DataScreen.js
+ * Cette vue contient la liste de données que l'utilisateur peut consulter et modifier.
+ * Les données de la liste sont récupérées depuis l'AsyncStorage à chaque fois que cette vue est affichée.
+ */
 
 class DataScreen extends React.Component {
 
@@ -12,10 +19,19 @@ class DataScreen extends React.Component {
   }
 
   componentDidMount() {
+    // On récupère les données depuis l'AsyncStorage
     AsyncStorage.getItem("stringsArray", (error, result) => {
       if (!error) {
-        const action = { type: "hydrateStoreFromAsyncStorage", value: JSON.parse(result) }
+        
+        /* Si l'élément demandé n'est pas trouvé, le résultat est null
+           Mais on souhaite que stringsArray soit initialisé comme un tableau vide et non à null */
+        let parsedResult = JSON.parse(result);
+        let stringsArray = parsedResult ? parsedResult : [];
+
+        // On envoie les données récupérer au reducer
+        const action = { type: "hydrateStoreFromAsyncStorage", value: stringsArray }
         this.props.dispatch(action);
+
       }
       else console.error(error);
     });
@@ -34,6 +50,7 @@ class DataScreen extends React.Component {
   }
 
   _sendElementToAdd() {
+    // On envoie l'élément à ajouter au reducer
     const action = { type: "addElement", value: this.elementToAdd };
     this.elementToAdd = "";
     this.textInputRef.current.clear();
@@ -41,6 +58,7 @@ class DataScreen extends React.Component {
   }
 
   _resetElements() {
+    // On envoie l'instruction de réinitialisation au reducer
     const action = { type: "resetElements" };
     this.props.dispatch(action);
   }
@@ -50,18 +68,22 @@ class DataScreen extends React.Component {
     let keyCounter = 0;
     return (
       <View style={styles.main_container}>
+        
+        {/* Titre de la vue */}
         <Text style={styles.headline}>Liste de données</Text>
+        
+        {/* Liste de données */}
         <View style={styles.data_list_container}>
           <FlatList
             contentContainerStyle={styles.data_list}
             data={stringsArray}
-            ListEmptyComponent={this._displayListEmptyComponent}
-            keyExtractor={() => (++keyCounter).toString()}
-            renderItem={({item}) =>
-              <Text style={styles.list_item}>- {item}</Text>
-            }
+            ListEmptyComponent={this._displayListEmptyComponent} // Affiche une phrase quand la liste est vide
+            keyExtractor={() => (keyCounter++).toString()}
+            renderItem={ ({item}) => <Text style={styles.list_item}>- {item}</Text> }
           />
         </View>
+        
+        {/* TextInput et boutons utilisateur */}
         <View style={styles.add_element_container}>
           <View style={{flex: 1}}>
             <TextInput
@@ -72,6 +94,7 @@ class DataScreen extends React.Component {
               onSubmitEditing={() => this._sendElementToAdd()}
             />
           </View>
+          {/* Bouton d'ajout d'éléments */}
           <TouchableOpacity
             style={[ styles.add_element_button, styles.button ]}
             onPress={() => this._sendElementToAdd()}
@@ -81,6 +104,7 @@ class DataScreen extends React.Component {
               source={require("../Images/send_arrow_white.png")}
             />
           </TouchableOpacity>
+          {/* Bouton de réinitialisation */}
           <TouchableOpacity
             style={[ styles.clear_button, styles.button ]}
             onPress={() => this._resetElements()}
@@ -91,87 +115,12 @@ class DataScreen extends React.Component {
             />
           </TouchableOpacity>
         </View>
+
       </View>
     )
   }
 
 }
-
-const styles = StyleSheet.create({
-  main_container: {
-    flex: 1,
-    backgroundColor: "#222",
-    paddingHorizontal: 10
-  },
-  headline: {
-    color: "white",
-    textAlign: "center",
-    marginTop: 50,
-    marginBottom: 30,
-    fontSize: 34,
-  },
-  data_list_container: {
-    flex: 1,
-    borderWidth: 2,
-    borderColor: "white",
-    paddingHorizontal: 10
-  },
-  data_list: {
-    flexGrow: 1
-  },
-  list_item: {
-    color: "white",
-    fontSize: 20,
-    textAlign: "justify"
-  },
-  empty_list_view: {
-    flex: 1,
-    justifyContent:"center",
-    alignItems: "center"
-  },
-  empty_list_text: {
-    color: "white",
-    fontSize: 20
-  },
-  button: {
-    width: 50,
-    height: 50,
-    borderRadius: 30,
-    borderWidth: 2,
-    borderColor: "white",
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  add_element_container: {
-    paddingVertical: 30,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  add_element_textinput: {
-    backgroundColor: "white",
-    width: "100%",
-    height: 30,
-    paddingLeft: 5,
-    borderRadius: 3
-  },
-  add_element_button: {
-    marginLeft: 15,
-    backgroundColor: "#0091CD",
-  },
-  send_icon: {
-    width: 25,
-    height: 25
-  },
-  clear_button: {
-    marginLeft: 15,
-    backgroundColor: "#B00",
-  },
-  clear_icon: {
-    width: 25,
-    height: 25
-  }
-});
 
 const mapStateToProps = state => {
   return {
