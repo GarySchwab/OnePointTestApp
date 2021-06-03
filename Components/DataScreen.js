@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, View, Text, FlatList, TextInput, TouchableOpacity, Image } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { connect } from "react-redux";
 
 class DataScreen extends React.Component {
@@ -8,6 +9,16 @@ class DataScreen extends React.Component {
     super(props);
     this.elementToAdd = "";
     this.textInputRef = React.createRef();
+  }
+
+  componentDidMount() {
+    AsyncStorage.getItem("stringsArray", (error, result) => {
+      if (!error) {
+        const action = { type: "hydrateStoreFromAsyncStorage", value: JSON.parse(result) }
+        this.props.dispatch(action);
+      }
+      else console.error(error);
+    });
   }
   
   _displayListEmptyComponent() {
@@ -24,14 +35,19 @@ class DataScreen extends React.Component {
 
   _sendElementToAdd() {
     const action = { type: "addElement", value: this.elementToAdd };
+    this.elementToAdd = "";
     this.textInputRef.current.clear();
+    this.props.dispatch(action);
+  }
+
+  _resetElements() {
+    const action = { type: "resetElements" };
     this.props.dispatch(action);
   }
 
   render() {
     const { stringsArray } = this.props;
     let keyCounter = 0;
-    const testArray = ["Première chaine", "Deuxième test de la chaine", "Lorem ipsum dolor sit amensLorem ipsum dolor sit amensLorem ipsum dolor sit amensLorem ipsum dolor sit amensLorem ipsum dolor sit amens", "Première chaine", "Deuxième test de la chaine","Première chaine", "Deuxième test de la chaine","Première chaine", "Deuxième test de la chaine","Première chaine", "Deuxième test de la chaine","Première chaine", "Deuxième test de la chaine","Première chaine", "Deuxième test de la chaine","Première chaine", "Deuxième test de la chaine","Première chaine", "Deuxième test de la chaine","Première chaine", "Deuxième test de la chaine","Première chaine", "Deuxième test de la chaine","Première chaine", "Deuxième test de la chaine","Première chaine", "Deuxième test de la chaine", "woogle"];
     return (
       <View style={styles.main_container}>
         <Text style={styles.headline}>Liste de données</Text>
@@ -57,12 +73,21 @@ class DataScreen extends React.Component {
             />
           </View>
           <TouchableOpacity
-            style={styles.add_element_button}
+            style={[ styles.add_element_button, styles.button ]}
             onPress={() => this._sendElementToAdd()}
           >
             <Image
               style={styles.send_icon}
               source={require("../Images/send_arrow_white.png")}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[ styles.clear_button, styles.button ]}
+            onPress={() => this._resetElements()}
+          >
+            <Image
+              style={styles.clear_icon}
+              source={require("../Images/trash_white.png")}
             />
           </TouchableOpacity>
         </View>
@@ -83,7 +108,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 50,
     marginBottom: 30,
-    fontSize: 30
+    fontSize: 34,
   },
   data_list_container: {
     flex: 1,
@@ -108,6 +133,15 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 20
   },
+  button: {
+    width: 50,
+    height: 50,
+    borderRadius: 30,
+    borderWidth: 2,
+    borderColor: "white",
+    justifyContent: "center",
+    alignItems: "center"
+  },
   add_element_container: {
     paddingVertical: 30,
     flexDirection: "row",
@@ -122,21 +156,18 @@ const styles = StyleSheet.create({
     borderRadius: 3
   },
   add_element_button: {
-    marginLeft: 20,
-    width: 50,
-    height: 50,
+    marginLeft: 15,
     backgroundColor: "#0091CD",
-    borderRadius: 30,
-    borderWidth: 2,
-    borderColor: "white",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  button_label: {
-    color: "white"
   },
   send_icon: {
+    width: 25,
+    height: 25
+  },
+  clear_button: {
+    marginLeft: 15,
+    backgroundColor: "#B00",
+  },
+  clear_icon: {
     width: 25,
     height: 25
   }

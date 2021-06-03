@@ -12,8 +12,8 @@ function MainStack() {
         headerShown: false
       }}
     >
-      <StackNavigator.Screen name="Data" component={DataScreen} />
       <StackNavigator.Screen name="Home" component={HomeScreen} />
+      <StackNavigator.Screen name="Data" component={DataScreen} />
     </StackNavigator.Navigator>
   );
 }
